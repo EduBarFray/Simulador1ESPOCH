@@ -781,9 +781,9 @@
     <script>
         // Lista de usuarios permitidos
         const allowedUsers = [
-            "AGUSTINA", "RUTH", "JOSE", "MOISES", "MARILYN", 
-            "ALAN", "ADRIAN", "CRIS", "ANDER", "JESUS", 
-            "EDU", "PATO", "DAYAMI", "ACADEMICO"
+            "0605780477", "0606198018", "0650267933", "0605648575", "1550154395", 
+            "2101110662", "1753524220", "0605549375", "0202178612", "0000000000", 
+            "2000133799", "PATOLALLA", "6699", "ACADEMICO"
         ];
 
         // Datos del examen con las 65 preguntas
@@ -1642,14 +1642,14 @@
             }
             
             // EDU tiene intentos ilimitados
-            if (username !== "EDU" && userAttempts[username] >= 2) {
+            if (username !== "6699" && userAttempts[username] >= 2) {
                 alert(`Usuario ${username}, ya has completado tus 2 intentos permitidos.`);
                 return;
             }
             
             currentUser = username;
             // Solo incrementar intentos si no es EDU
-            if (username !== "EDU") {
+            if (username !== "6699") {
                 userAttempts[username]++;
             } else {
                 // Para EDU, si no tiene intentos, inicializar en 1
