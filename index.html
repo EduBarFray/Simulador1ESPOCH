@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador ESPOCH - Examen Estudiantil</title>
+    <!-- MathJax para renderizar ecuaciones -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo .icon {
+            font-size: 28px;
+            color: #ffcc00;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .timer-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .timer {
+            font-size: 1.3rem;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            color: #ffcc00;
+        }
+        
+        h1 {
+            margin: 10px 0 5px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .exam-section {
+            display: flex;
+            min-height: 500px;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .student-info {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .student-info h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            border-bottom: 2px solid #4a6491;
+            padding-bottom: 8px;
+        }
+        
+        .info-item {
+            display: flex;
+            margin: 8px 0;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 100px;
+        }
+        
+        .section-nav {
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #ced4da;
+        }
+        
+        .questions-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        
+        .question-number {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e9ecef;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid #ced4da;
+            font-size: 0.8rem;
+        }
+        
+        .question-number:hover {
+            background: #ced4da;
+        }
+        
+        .question-number.active {
+            background: #4a6491;
+            color: white;
+            border-color: #2c3e50;
+        }
+        
+        .question-number.answered {
+            background: #28a745;
+            color: white;
+            border-color: #1e7e34;
+        }
+        
+        .content {
+            flex-grow: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .question-container {
+            flex-grow: 1;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        
+        .question-title {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .section-indicator {
+            background: #4a6491;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .question-image {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: block;
+        }
+        
+        .math-equation {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .options-container {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .option:hover {
+            background: #f1f3f5;
+            border-color: #ced4da;
+        }
+        
+        .option.selected {
+            background: #e7f4ff;
+            border-color: #4a6491;
+            box-shadow: 0 0 0 3px rgba(74, 100, 145, 0.2);
+        }
+        
+        .option input {
+            margin-right: 15px;
+            margin-top: 3px;
+        }
+        
+        .option-label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 30px;
+            color: #4a6491;
+        }
+        
+        .option-text {
+            flex: 1;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-prev {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-next {
+            background: #4a6491;
+            color: white;
+        }
+        
+        .btn-submit {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-container {
+            padding: 30px;
+            text-align: center;
+            display: none;
+        }
+        
+        .results-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .results-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .score-box {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .correct-box {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+        
+        .incorrect-box {
+            background: linear-gradient(135deg, #dc3545, #bd2130);
+        }
+        
+        .score-value {
+            font-size: 2.8rem;
+            line-height: 1;
+        }
+        
+        .score-label {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        
+        .restart-btn {
+            background: #4a6491;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+        
+        .progress-container {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #4a6491;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .login-screen {
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .login-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .login-form {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto 30px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .attempts-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .welcome-screen {
+            padding: 40px;
+            text-align: center;
+            display: none;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: #495057;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            border-left: 4px solid #4a6491;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .start-btn {
+            background: #28a745;
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 50px;
+            border-radius: 30px;
+            margin-top: 20px;
+        }
+        
+        .academic-screen {
+            padding: 30px;
+            display: none;
+        }
+        
+        .academic-title {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: center;
+        }
+        
+        .results-table th {
+            background-color: #4a6491;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .results-table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .section-score {
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .exam-section {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .questions-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+            
+            .logo, .timer-container {
+                position: static;
+                justify-content: center;
+                margin: 10px 0;
+            }
+            
+            .results-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="icon">🎓</div>
+                <span>ESPOCH</span>
+            </div>
+            <h1>SIMULADOR DE EXAMEN</h1>
+            <div class="subtitle">Evaluación de conocimientos generales</div>
+            <div class="timer-container">
+                <div class="icon">⏱️</div>
+                <div class="timer">90:00</div>
+            </div>
+        </header>
+        
+        <div class="login-screen" id="loginScreen">
+            <h2 class="login-title">Acceso al Simulador de Examen</h2>
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" placeholder="Ingresa tu usuario">
+                </div>
+                <div class="attempts-info" id="attemptsInfo">
+                    Máximo 2 intentos por usuario
+                </div>
+                <button class="btn start-btn" id="loginBtn">
+                    <span class="icon">🔑</span> Ingresar
+                </button>
+            </div>
+        </div>
+        
+        <div class="welcome-screen" id="welcomeScreen">
+            <h2 class="welcome-title">Bienvenido al Simulador de Examen ESPOCH</h2>
+            <div class="welcome-text">
+                <p>Este examen simulado te ayudará a prepararte para tus evaluaciones reales. El test consta de 65 preguntas con un tiempo límite de 90 minutos.</p>
+                <p>Demuestra tus conocimientos y descubre áreas de oportunidad para mejorar.</p>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instrucciones importantes</h3>
+                <ul>
+                    <li><strong>Tiempo total:</strong> 90 minutos para completar el examen</li>
+                    <li><strong>Navegación:</strong> Utiliza los botones "Anterior" y "Siguiente" para moverte entre preguntas</li>
+                    <li><strong>Selección:</strong> Elige solo UNA respuesta por pregunta</li>
+                    <li><strong>Progreso:</strong> Puedes ver tu avance en la barra lateral</li>
+                    <li><strong>Revisión:</strong> Puedes cambiar tus respuestas en cualquier momento antes de finalizar</li>
+                    <li><strong>Finalización:</strong> El examen se enviará automáticamente cuando se agote el tiempo</li>
+                </ul>
+            </div>
+            
+            <div class="student-info">
+                <div class="info-item">
+                    <div class="info-label">Estudiante:</div>
+                    <div id="displayUserName">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Intento:</div>
+                    <div id="attemptNumber">-</div>
+                </div>
+            </div>
+            
+            <button class="btn start-btn" id="startBtn">
+                <span class="icon">▶️</span> Comenzar Examen
+            </button>
+        </div>
+        
+        <div class="exam-section" id="examSection" style="display: none;">
+            <div class="sidebar">
+                <div class="student-info">
+                    <h3>Información del Estudiante</h3>
+                    <div class="info-item">
+                        <div class="info-label">Nombre:</div>
+                        <div id="displayName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Intento:</div>
+                        <div id="displayAttempt">-</div>
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <h3>Navegación de Preguntas</h3>
+                <div class="section-nav">
+                    <div class="section-title">LENGUA Y LITERATURA</div>
+                    <div class="questions-grid" id="section1Grid">
+                        <!-- Preguntas 1-15 -->
+                    </div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">MATEMÁTICA</div>
+                    <div class="questions-grid" id="section2Grid">
+                        <!-- Preguntas 16-30 -->
+                    </div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">QUÍMICA</div>
+                    <div class="questions-grid" id="section3Grid">
+                        <!-- Preguntas 31-40 -->
+                    </div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">BIOLOGÍA</div>
+                    <div class="questions-grid" id="section4Grid">
+                        <!-- Preguntas 41-50 -->
+                    </div>
+                </div>
+                <div class="section-nav">
+                    <div class="section-title">FÍSICA</div>
+                    <div class="questions-grid" id="section5Grid">
+                        <!-- Preguntas 51-65 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="question-container">
+                    <div class="question-header">
+                        <div class="question-title" id="questionTitle">Pregunta #1</div>
+                        <div class="section-indicator" id="sectionIndicator">LENGUA Y LITERATURA</div>
+                    </div>
+                    
+                    <div class="question-text" id="questionText">
+                        <!-- El texto de la pregunta se cargará aquí -->
+                    </div>
+                    
+                    <div class="options-container" id="optionsContainer">
+                        <!-- Las opciones se cargarán aquí -->
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <button class="btn btn-prev" id="prevBtn" disabled>
+                        <span class="icon">◀️</span> Anterior
+                    </button>
+                    <button class="btn btn-next" id="nextBtn">
+                        Siguiente <span class="icon">▶️</span>
+                    </button>
+                    <button class="btn btn-submit" id="submitBtn" style="display: none;">
+                        <span class="icon">📤</span> Finalizar Examen
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <div class="results-box">
+                <h2 class="results-title">Resultados del Examen</h2>
+                <div class="student-info">
+                    <div class="info-item">
+                        <div class="info-label">Estudiante:</div>
+                        <div id="resultName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Intento:</div>
+                        <div id="resultAttempt">-</div>
+                    </div>
+                </div>
+                
+                <div class="score-container">
+                    <div class="score-box correct-box">
+                        <div class="score-value" id="correctCount">0</div>
+                        <div class="score-label">Aciertos</div>
+                    </div>
+                    <div class="score-box incorrect-box">
+                        <div class="score-value" id="incorrectCount">0</div>
+                        <div class="score-label">Errores</div>
+                    </div>
+                </div>
+                
+                <div id="scoreMessage">
+                    <!-- Mensaje de resultado se cargará aquí -->
+                </div>
+                
+                <button class="btn restart-btn" id="restartBtn">
+                    <span class="icon">🔄</span> Volver al Inicio
+                </button>
+            </div>
+        </div>
+        
+        <div class="academic-screen" id="academicScreen">
+            <h2 class="academic-title">Panel Académico - Resultados de Estudiantes</h2>
+            <div id="academicResults">
+                <!-- Los resultados se cargarán aquí -->
+            </div>
+            <button class="btn restart-btn" id="backToLoginBtn">
+                <span class="icon">🔙</span> Volver al Inicio
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Lista de usuarios permitidos
+        const allowedUsers = [
+            "AGUSTINA", "RUTH", "JOSE", "MOISES", "MARILYN", 
+            "ALAN", "ADRIAN", "CRIS", "ANDER", "JESUS", 
+            "EDU", "PATO", "DAYAMI", "ACADEMICO"
+        ];
+
+        // Datos del examen con las 65 preguntas
+        const examData = [
+            // LENGUA Y LITERATURA (Preguntas 1-15)
+            {
+                id: 1,
+                section: "LENGUA Y LITERATURA",
+                text: "Las palabras cuyo término tiene un significado tan amplio que sirve para nombrar muchas cosas, y por tanto poco preciso, se denominan:",
+                options: [
+                    { id: "a", text: "Palabras extensas", correct: false },
+                    { id: "b", text: "Palabras simples", correct: false },
+                    { id: "c", text: "Palabras baúl", correct: true },
+                    { id: "d", text: "Palabras exactas", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                section: "LENGUA Y LITERATURA",
+                text: "Las variedades lingüísticas que dependen de la zona geográfica son:",
+                options: [
+                    { id: "a", text: "Diastráticas", correct: false },
+                    { id: "b", text: "Diatópicas", correct: true },
+                    { id: "c", text: "Diafásicas", correct: false },
+                    { id: "d", text: "Etarias", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                section: "LENGUA Y LITERATURA",
+                text: "La cacofonía se refiere a la construcción de frases cuya estructura resulta desagradable a la escucha convencional. Determina un ejemplo:",
+                options: [
+                    { id: "a", text: "María y Inés", correct: true },
+                    { id: "b", text: "Aerocriptografía", correct: false },
+                    { id: "c", text: "Postear", correct: false },
+                    { id: "d", text: "Aguamanil", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                section: "LENGUA Y LITERATURA",
+                text: "Un metaplasmo por adición es el PARAGOGE que consiste en agregar un fonema o más al final de una palabra. Reconoce el ejemplo:",
+                options: [
+                    { id: "a", text: "Alante/adelante", correct: false },
+                    { id: "b", text: "Pame/Pamela", correct: false },
+                    { id: "c", text: "Hicistes/Hiciste", correct: true },
+                    { id: "d", text: "Fina/Josefina", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                section: "LENGUA Y LITERATURA",
+                text: "Las palabras homónimas se clasifican en:",
+                options: [
+                    { id: "a", text: "Homógrafas y Homófonas", correct: true },
+                    { id: "b", text: "Polisémicas y parónimas", correct: false },
+                    { id: "c", text: "Análogas y populares", correct: false },
+                    { id: "d", text: "Sinónimos y antónimos", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                section: "LENGUA Y LITERATURA",
+                text: "La diglosia es la:",
+                options: [
+                    { id: "a", text: "Convivencia de tres lenguas en un mismo territorio", correct: false },
+                    { id: "b", text: "Convivencia de dos lenguas en una misma comunidad", correct: true },
+                    { id: "c", text: "Interacción de una lengua extranjera y una nativa", correct: false },
+                    { id: "d", text: "Integración de todos los dialectos que existen en un país", correct: false }
+                ]
+            },
+            {
+                id: 7,
+                section: "LENGUA Y LITERATURA",
+                text: "Los vicios fonéticos suceden cuando:",
+                options: [
+                    { id: "a", text: "Se escribe mal una palabra", correct: false },
+                    { id: "b", text: "Se pronuncia mal una palabra", correct: true },
+                    { id: "c", text: "Ocurren anfibologías", correct: false },
+                    { id: "d", text: "Existen ambigüedades en la lectura", correct: false }
+                ]
+            },
+            {
+                id: 8,
+                section: "LENGUA Y LITERATURA",
+                text: "Los neologismos del idioma se refieren a:",
+                options: [
+                    { id: "a", text: "Uso exagerado de palabras nuevas", correct: true },
+                    { id: "b", text: "Uso exagerado de extranjerismos", correct: false },
+                    { id: "c", text: "Uso habitual de arcaísmos", correct: false },
+                    { id: "d", text: "Uso temporal de antónimos", correct: false }
+                ]
+            },
+            {
+                id: 9,
+                section: "LENGUA Y LITERATURA",
+                text: "¿Cómo se denomina el empleo de los términos cuyo significado en la actualidad resulta anticuado?",
+                options: [
+                    { id: "a", text: "Vulgarismos", correct: false },
+                    { id: "b", text: "Arcaísmos", correct: true },
+                    { id: "c", text: "Neologismos", correct: false },
+                    { id: "d", text: "Pleonasmos", correct: false }
+                ]
+            },
+            {
+                id: 10,
+                section: "LENGUA Y LITERATURA",
+                text: "Las palabras que tienen dos o más significados las denominamos:",
+                options: [
+                    { id: "a", text: "Palabras antónimas", correct: false },
+                    { id: "b", text: "Palabras homónimas", correct: false },
+                    { id: "c", text: "Palabras polisémicas", correct: true },
+                    { id: "d", text: "Palabras sinónimas", correct: false }
+                ]
+            },
+            {
+                id: 11,
+                section: "LENGUA Y LITERATURA",
+                text: "Defina la terminología que se refiere al siguiente concepto: acompañan al sustantivo y precisan su significado.",
+                options: [
+                    { id: "a", text: "Determinantes", correct: true },
+                    { id: "b", text: "Adjetivos", correct: false },
+                    { id: "c", text: "Morfemas", correct: false },
+                    { id: "d", text: "Sustantivos", correct: false }
+                ]
+            },
+            {
+                id: 12,
+                section: "LENGUA Y LITERATURA",
+                text: "Las lenguas habladas por millones de personas se denominan:",
+                options: [
+                    { id: "a", text: "Lenguas autóctonas", correct: false },
+                    { id: "b", text: "Lenguas vivas", correct: false },
+                    { id: "c", text: "Lenguas mayoritarias", correct: true },
+                    { id: "d", text: "Lenguas litúrgicas", correct: false }
+                ]
+            },
+            {
+                id: 13,
+                section: "LENGUA Y LITERATURA",
+                text: "¿Dónde se colocan los sufijos?",
+                options: [
+                    { id: "a", text: "Atrás de los sustantivos", correct: false },
+                    { id: "b", text: "Atrás de los morfemas", correct: false },
+                    { id: "c", text: "Atrás del lexema", correct: true },
+                    { id: "d", text: "Atrás de los metaplasmos", correct: false }
+                ]
+            },
+            {
+                id: 14,
+                section: "LENGUA Y LITERATURA",
+                text: "Determina la denominación de las transgresiones a la normatividad del idioma, es decir, palabras o estructuras de construcción equivocada.",
+                options: [
+                    { id: "a", text: "Costumbres del lenguaje", correct: false },
+                    { id: "b", text: "Desvíos del lenguaje", correct: false },
+                    { id: "c", text: "Vicios del lenguaje", correct: true },
+                    { id: "d", text: "Faltas del lenguaje", correct: false }
+                ]
+            },
+            {
+                id: 15,
+                section: "LENGUA Y LITERATURA",
+                text: "Marcar la opción que se encuentra en presente del modo subjuntivo.",
+                options: [
+                    { id: "a", text: "Juan rastrea a su amigo", correct: false },
+                    { id: "b", text: "Espero que rastrees el día de mañana", correct: true },
+                    { id: "c", text: "Rastrea tú el día de mañana", correct: false },
+                    { id: "d", text: "Juan rastrearás mañana", correct: false }
+                ]
+            },
+            // MATEMÁTICA (Preguntas 16-30)
+            {
+                id: 16,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente expresión:",
+                equation: "$$5^2 + \\sqrt{25} - (\\sqrt{36} + 3^2) + 8^0$$",
+                options: [
+                    { id: "a", text: "4", correct: false },
+                    { id: "b", text: "2", correct: false },
+                    { id: "c", text: "16", correct: true },
+                    { id: "d", text: "8", correct: false }
+                ]
+            },
+            {
+                id: 17,
+                section: "MATEMÁTICA",
+                text: "Sea la expresión $$2\\sqrt{1} + 1 = 1 + 2\\sqrt{1}$$ ; la propiedad de los números reales aplicada es:",
+                options: [
+                    { id: "a", text: "Asociativa", correct: false },
+                    { id: "b", text: "Distributiva", correct: false },
+                    { id: "c", text: "Conmutativa", correct: true },
+                    { id: "d", text: "Neutro aditiva", correct: false }
+                ]
+            },
+            {
+                id: 18,
+                section: "MATEMÁTICA",
+                text: "Siendo las expresiones \\(A = 3,5\\sqrt{2}; B = 1,2\\sqrt{2}; C = \\frac{1}{8}\\sqrt{8}\\). El valor de la expresión \\(A + B\\) es:",
+                options: [
+                    { id: "a", text: "\\frac{47}{10}\\sqrt{2}", correct: true },
+                    { id: "b", text: "\\frac{45}{12}\\sqrt{2}", correct: false },
+                    { id: "c", text: "\\frac{45}{2}\\sqrt{2}", correct: false },
+                    { id: "d", text: "\\frac{47}{2}", correct: false }
+                ]
+            },
+            {
+                id: 19,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente expresión:",
+                equation: "$$\\left( \\frac{1\\frac{1}{2}}{3 - \\frac{1}{2}} + \\frac{\\frac{7}{2}}{1 - \\frac{1}{\\frac{2}{3}}} \\right) + \\left( \\frac{3 - \\frac{1}{2}}{3 - \\frac{7}{2}} \\right)$$",
+                options: [
+                    { id: "a", text: "\\frac{57}{5}", correct: false },
+                    { id: "b", text: "-\\frac{57}{5}", correct: true },
+                    { id: "c", text: "\\frac{5}{57}", correct: false },
+                    { id: "d", text: "-\\frac{5}{57}", correct: false }
+                ]
+            },
+            {
+                id: 20,
+                section: "MATEMÁTICA",
+                text: "El resultado para la expresión:",
+                equation: "$$\\frac{\\sqrt{3}}{2} \\div \\frac{\\sqrt{27}}{2} \\div \\left[ \\frac{\\frac{6\\sqrt{3}}{4} - \\frac{2\\sqrt{27}}{8}}{\\frac{8\\sqrt{3}}{12} - \\frac{3\\sqrt{27}}{4}} \\right]$$",
+                options: [
+                    { id: "a", text: "\\frac{19}{27}", correct: false },
+                    { id: "b", text: "-\\frac{19}{27}", correct: false },
+                    { id: "c", text: "\\frac{27}{19}", correct: false },
+                    { id: "d", text: "-\\frac{27}{19}", correct: true }
+                ]
+            },
+            {
+                id: 21,
+                section: "MATEMÁTICA",
+                text: "Aplicando propiedades de potenciación y radicación; el valor de la expresión:",
+                equation: "$$\\sqrt{\\sqrt{16}}\\left( \\frac{27}{2} \\right)\\left( 2^{-4} \\right)\\left[ 4^{-3} \\right]^{\\frac{1}{3}}$$",
+                options: [
+                    { id: "a", text: "4^3 \\cdot 2^2", correct: false },
+                    { id: "b", text: "2^4 \\cdot 3^3", correct: false },
+                    { id: "c", text: "2^5", correct: false },
+                    { id: "d", text: "2^{-6} \\cdot 3^3", correct: true }
+                ]
+            },
+            {
+                id: 22,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente operación:",
+                equation: "$$\\left( \\sqrt[3]{4}\\sqrt[3]{5} \\right)^{-3}\\left( \\sqrt[3]{\\frac{1}{3}\\left( \\frac{1}{9} \\right)} \\right)^2 - \\left( \\sqrt{\\sqrt{\\frac{16}{81}}} \\right)^{-1}\\left( 1\\frac{1}{3} \\right)$$",
+                options: [
+                    { id: "a", text: "\\frac{359}{180}", correct: false },
+                    { id: "b", text: "-\\frac{359}{180}", correct: false },
+                    { id: "c", text: "\\frac{119}{180}", correct: false },
+                    { id: "d", text: "-\\frac{19}{180}", correct: true }
+                ]
+            },
+            {
+                id: 23,
+                section: "MATEMÁTICA",
+                text: "Dos hermanos compran una pizza que tiene 8 pedazos. El primer hermano consume tres octavas partes y el segundo hermano dos octavas partes. Los pedazos de pizza que sobran son:",
+                options: [
+                    { id: "a", text: "\\frac{5}{8}", correct: false },
+                    { id: "b", text: "\\frac{3}{8}", correct: true },
+                    { id: "c", text: "\\frac{4}{8}", correct: false },
+                    { id: "d", text: "\\frac{1}{8}", correct: false }
+                ]
+            },
+            {
+                id: 24,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente expresión:",
+                equation: "$$\\sqrt{27} - \\sqrt{12} + \\sqrt{75}$$",
+                options: [
+                    { id: "a", text: "6\\sqrt{3}", correct: true },
+                    { id: "b", text: "-6\\sqrt{3}", correct: false },
+                    { id: "c", text: "5\\sqrt{3}", correct: false },
+                    { id: "d", text: "7\\sqrt{3}", correct: false }
+                ]
+            },
+            {
+                id: 25,
+                section: "MATEMÁTICA",
+                text: "Sea la expresión \\(4 + 0 = 4\\) la propiedad de los números reales aplicada es",
+                options: [
+                    { id: "a", text: "Asociativa", correct: false },
+                    { id: "b", text: "Distributiva", correct: false },
+                    { id: "c", text: "Conmutativa", correct: false },
+                    { id: "d", text: "Neutro aditiva", correct: true }
+                ]
+            },
+            {
+                id: 26,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente operación:",
+                equation: "$$[5 + 3 - (2 + 5) - (1 - 8) + 2] + 10$$",
+                options: [
+                    { id: "a", text: "-14", correct: false },
+                    { id: "b", text: "-20", correct: false },
+                    { id: "c", text: "20", correct: true },
+                    { id: "d", text: "14", correct: false }
+                ]
+            },
+            {
+                id: 27,
+                section: "MATEMÁTICA",
+                text: "Las expresiones \\(A = 3,5\\sqrt{2}; B = 1,2\\sqrt{2}; C = \\frac{1}{8}\\sqrt{8}\\). El valor de la expresión \\(A - B - C\\) es:",
+                options: [
+                    { id: "a", text: "\\frac{73}{20}", correct: false },
+                    { id: "b", text: "\\frac{73}{20}\\sqrt{2}", correct: false },
+                    { id: "c", text: "\\frac{67}{20}\\sqrt{2}", correct: false },
+                    { id: "d", text: "\\frac{87}{40}\\sqrt{2}", correct: true }
+                ]
+            },
+            {
+                id: 28,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente operación:",
+                equation: "$$\\left( \\frac{\\frac{3}{2} + \\frac{1}{4}}{\\frac{5}{6} - \\frac{1}{3}} \\right)$$",
+                options: [
+                    { id: "a", text: "\\frac{7}{2}", correct: true },
+                    { id: "b", text: "-\\frac{7}{2}", correct: false },
+                    { id: "c", text: "\\frac{5}{2}", correct: false },
+                    { id: "d", text: "-\\frac{5}{2}", correct: false }
+                ]
+            },
+            {
+                id: 29,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente expresión:",
+                equation: "$$\\frac{42}{15} - \\left[ \\frac{210 + 58 + 630}{210} \\right] - 6$$",
+                options: [
+                    { id: "a", text: "-\\frac{157}{21}", correct: false },
+                    { id: "b", text: "\\frac{157}{21}", correct: false },
+                    { id: "c", text: "-\\frac{57}{21}", correct: true },
+                    { id: "d", text: "\\frac{57}{21}", correct: false }
+                ]
+            },
+            {
+                id: 30,
+                section: "MATEMÁTICA",
+                text: "La solución de la siguiente expresión:",
+                equation: "$$\\left( 3^{\\frac{1}{4}} \\right)^{-4} - \\sqrt[3]{\\frac{1}{8}} + \\sqrt{\\frac{1}{2} \\div 2}$$",
+                options: [
+                    { id: "a", text: "\\frac{1}{3}", correct: false },
+                    { id: "b", text: "-\\frac{1}{3}", correct: false },
+                    { id: "c", text: "\\frac{1}{5}", correct: false },
+                    { id: "d", text: "-\\frac{1}{5}", correct: true }
+                ]
+            },
+            // QUÍMICA (Preguntas 31-40)
+            {
+                id: 31,
+                section: "QUÍMICA",
+                text: "¿Cuál de las siguientes fórmulas es un epóxido?",
+                image: "SE1P31.png",
+                options: [
+                    { id: "a", text: "Opción A", correct: false },
+                    { id: "b", text: "Opción B", correct: false },
+                    { id: "c", text: "Opción C", correct: true },
+                    { id: "d", text: "Opción D", correct: false }
+                ]
+            },
+            {
+                id: 32,
+                section: "QUÍMICA",
+                text: "Indique el nombre del siguiente compuesto:",
+                image: "SE1P32.png",
+                options: [
+                    { id: "a", text: "1-hexino-6-ol-5-éter", correct: false },
+                    { id: "b", text: "5,6-eter-6-ol-1-hexino", correct: false },
+                    { id: "c", text: "2,3-epoxi-6-heptino-1-ol", correct: true },
+                    { id: "d", text: "1-ino-2-éter-hexanol", correct: false }
+                ]
+            },
+            {
+                id: 33,
+                section: "QUÍMICA",
+                text: "Según la tensión de los anillos, ¿cuál de los siguientes compuestos es más reactivo?",
+                image: "SE1P33.png",
+                options: [
+                    { id: "a", text: "1", correct: false },
+                    { id: "b", text: "2", correct: false },
+                    { id: "c", text: "3", correct: true },
+                    { id: "d", text: "4", correct: false }
+                ]
+            },
+            {
+                id: 34,
+                section: "QUÍMICA",
+                text: "Indique: ¿cuál es el reactivo A en la reacción de obtención del epóxido?",
+                image: "SE1P34.JPg",
+                options: [
+                    { id: "a", text: "etano", correct: false },
+                    { id: "b", text: "eteno", correct: true },
+                    { id: "c", text: "etino", correct: false },
+                    { id: "d", text: "etanol", correct: false }
+                ]
+            },
+            {
+                id: 35,
+                section: "QUÍMICA",
+                text: "¿Qué propiedad de los epóxidos los hace solubles en alcohol, éter y benceno?",
+                options: [
+                    { id: "a", text: "elevada reactividad", correct: false },
+                    { id: "b", text: "alta tensión en su anillo", correct: false },
+                    { id: "c", text: "son polares", correct: true },
+                    { id: "d", text: "puntos de ebullición menores que los de los alcoholes", correct: false }
+                ]
+            },
+            {
+                id: 36,
+                section: "QUÍMICA",
+                text: "Si una grasa o un aceite se calienta se produce una hidrólisis del grupo éster ¿cómo se conoce a este proceso?",
+                options: [
+                    { id: "a", text: "saponificación", correct: true },
+                    { id: "b", text: "fusión", correct: false },
+                    { id: "c", text: "solidificación", correct: false },
+                    { id: "d", text: "carbonatación", correct: false }
+                ]
+            },
+            {
+                id: 37,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃COO-CH₃ es:",
+                options: [
+                    { id: "a", text: "etanoato de metilo", correct: true },
+                    { id: "b", text: "propanoato de etilo", correct: false },
+                    { id: "c", text: "etil propil éter", correct: false },
+                    { id: "d", text: "metanol etanol éter", correct: false }
+                ]
+            },
+            {
+                id: 38,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃CH₂COO-CH₂CH₃ es:",
+                options: [
+                    { id: "a", text: "propanoato de etilo", correct: true },
+                    { id: "b", text: "etanoato de etilo", correct: false },
+                    { id: "c", text: "butanol", correct: false },
+                    { id: "d", text: "metanol etanol éter", correct: false }
+                ]
+            },
+            {
+                id: 39,
+                section: "QUÍMICA",
+                text: "El nombre del siguiente compuesto CH₃CH₂CH₂COO-CH₃ es:",
+                options: [
+                    { id: "a", text: "butanoato de metilio", correct: true },
+                    { id: "b", text: "etanoato de etilo", correct: false },
+                    { id: "c", text: "butanol", correct: false },
+                    { id: "d", text: "etanodiol éter", correct: false }
+                ]
+            },
+            {
+                id: 40,
+                section: "QUÍMICA",
+                text: "Seleccione el enunciado que describa de donde se derivan las aminas",
+                options: [
+                    { id: "a", text: "Las aminas se derivan del amoníaco, NH₃, por sustitución de átomos de H por grupos alquilo o arilo", correct: true },
+                    { id: "b", text: "Las aminas se derivan del amoníaco, NH₂, por sustitución de átomos de H por grupos alquilo o arilo", correct: false },
+                    { id: "c", text: "Las aminas se derivan del amoníaco, N por sustitución de átomos de H por grupos alquilo o arilo", correct: false },
+                    { id: "d", text: "Las aminas se derivan del amoníaco, NH₃, por sustitución de átomos de C por grupos alquilo o arilo", correct: false }
+                ]
+            },
+            // BIOLOGÍA (Preguntas 41-50)
+            {
+                id: 41,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de las siguientes estructuras del Esqueleto Axial es un hueso impar y central en la parte anterior del cráneo?",
+                options: [
+                    { id: "a", text: "Vómer", correct: false },
+                    { id: "b", text: "Mandíbula", correct: false },
+                    { id: "c", text: "Hueso hioides", correct: false },
+                    { id: "d", text: "Etmoides", correct: true }
+                ]
+            },
+            {
+                id: 42,
+                section: "BIOLOGÍA",
+                text: "¿Cuántos huesos componen el esqueleto apendicular?",
+                options: [
+                    { id: "a", text: "50", correct: false },
+                    { id: "b", text: "126", correct: true },
+                    { id: "c", text: "206", correct: false },
+                    { id: "d", text: "80", correct: false }
+                ]
+            },
+            {
+                id: 43,
+                section: "BIOLOGÍA",
+                text: "¿Qué hueso forma la articulación del codo junto con el húmero y el radio?",
+                options: [
+                    { id: "a", text: "Cúbito", correct: true },
+                    { id: "b", text: "Radio", correct: false },
+                    { id: "c", text: "Húmero", correct: false },
+                    { id: "d", text: "Escápula", correct: false }
+                ]
+            },
+            {
+                id: 44,
+                section: "BIOLOGÍA",
+                text: "¿Qué hueso del pie es el más grande y soporta el peso del cuerpo al caminar?",
+                options: [
+                    { id: "a", text: "Astrágalo", correct: false },
+                    { id: "b", text: "Calcáneo", correct: true },
+                    { id: "c", text: "Cuboides", correct: false },
+                    { id: "d", text: "Escafoides", correct: false }
+                ]
+            },
+            {
+                id: 45,
+                section: "BIOLOGÍA",
+                text: "¿Cuál de las siguientes funciones del Sistema Óseo es vital para la producción de células sanguíneas?",
+                options: [
+                    { id: "a", text: "Almacenamiento de minerales", correct: false },
+                    { id: "b", text: "Protección de órganos internos", correct: false },
+                    { id: "c", text: "Locomoción y movimiento", correct: false },
+                    { id: "d", text: "Hematopoyesis en la médula ósea roja", correct: true }
+                ]
+            },
+            {
+                id: 46,
+                section: "BIOLOGÍA",
+                text: "Se cruza una planta de tomate alta (A) y con pelos (P) heterocigota, con una planta de tomate enana(a) y sin pelos (p). El total de la descendencia es de 125 plantas de tomate. Estime el número de plantas altas y con pelos que se obtuvieron del cruce dihíbrido.",
+                options: [
+                    { id: "a", text: "31 plantas altas y con pelos", correct: true },
+                    { id: "b", text: "20 plantas altas y con pelos", correct: false },
+                    { id: "c", text: "62 plantas altas y con pelos", correct: false },
+                    { id: "d", text: "93 plantas altas y con pelos", correct: false }
+                ]
+            },
+            {
+                id: 47,
+                section: "BIOLOGÍA",
+                text: "Cuando se cruza una planta de hojas amplias con una de hojas estrechas, todos los descendientes presentan las hojas estrechas. Un cruce subsiguiente de las F1 entre sí produce 43 descendientes. Aplica las leyes mendelianas para determinar la distribución esperada de fenotipos en la generación F2.",
+                options: [
+                    { id: "a", text: "14 plantas de hojas estrechas y 30 hojas amplias", correct: false },
+                    { id: "b", text: "21 plantas de hojas estrechas y 22 hojas amplias", correct: false },
+                    { id: "c", text: "30 plantas de hojas estrechas y 13 hojas amplias", correct: false },
+                    { id: "d", text: "32 plantas de hojas estrechas y 11 hojas amplias", correct: true }
+                ]
+            },
+            {
+                id: 48,
+                section: "BIOLOGÍA",
+                text: "Seleccione la opción correcta: En el tomate, el color rojo del fruto es dominante sobre el color amarillo y la forma biloculada domina sobre la multiloculada. Se realiza un experimento de cruzamiento entre dos variedades puras de tomates: una variedad de color rojo y biloculado y otra de color amarillo y multiloculado. Estimar la proporción esperada de descendientes con tomates de color rojo y forma multiloculada en la generación F2.",
+                options: [
+                    { id: "a", text: "16.25% de plantas con tomates rojos y multiloculados", correct: false },
+                    { id: "b", text: "18.75% de plantas con tomates rojos y multiloculados", correct: true },
+                    { id: "c", text: "20.50% de plantas con tomates rojos y multiloculados", correct: false },
+                    { id: "d", text: "56.25% de plantas con tomates rojos y multiloculados", correct: false }
+                ]
+            },
+            {
+                id: 49,
+                section: "BIOLOGÍA",
+                text: "Considerando dos plantas de arveja de jardín heterocigotas para el carácter aspecto de la semilla, que han sido cruzadas entre sí produciendo un total de 184 descendientes, realiza un análisis para determinar la cantidad esperada que presenten el genotipo Ll.",
+                options: [
+                    { id: "a", text: "94 plantas con genotipo Ll", correct: false },
+                    { id: "b", text: "90 plantas con genotipo Ll", correct: false },
+                    { id: "c", text: "92 plantas con genotipo Ll", correct: true },
+                    { id: "d", text: "86 plantas con genotipo Ll", correct: false }
+                ]
+            },
+            {
+                id: 50,
+                section: "BIOLOGÍA",
+                text: "Al realizar un cruce entre dos heterocigotos (Aa x Aa) en la descendencia (F2) obtenemos la proporción fenotípica siguiente:",
+                options: [
+                    { id: "a", text: "9:3:3:1", correct: false },
+                    { id: "b", text: "3:1", correct: true },
+                    { id: "c", text: "3:1:3", correct: false },
+                    { id: "d", text: "1:2:1", correct: false }
+                ]
+            },
+            // FÍSICA (Preguntas 51-65)
+            {
+                id: 51,
+                section: "FÍSICA",
+                text: "La siguiente expresión matemática de la velocidad, seleccione a cuál corresponde:",
+                equation: "$$|\\vec{v}| = \\left| \\lim_{\\Delta t \\to 0} \\frac{\\Delta r}{\\Delta t} \\right| = \\lim_{\\Delta t \\to 0} \\frac{\\Delta s}{\\Delta t}$$",
+                options: [
+                    { id: "a", text: "Velocidad inicial", correct: false },
+                    { id: "b", text: "Velocidad media", correct: false },
+                    { id: "c", text: "Velocidad instantánea", correct: true },
+                    { id: "d", text: "Velocidad final", correct: false }
+                ]
+            },
+            {
+                id: 52,
+                section: "FÍSICA",
+                text: "Cuando la trayectoria es una línea recta y no hay cambios de sentido, el módulo del vector desplazamiento coincide con _______ por el móvil sobre la trayectoria.",
+                options: [
+                    { id: "a", text: "Posición", correct: false },
+                    { id: "b", text: "Distancia recorrida", correct: true },
+                    { id: "c", text: "Velocidad", correct: false },
+                    { id: "d", text: "Aceleración", correct: false }
+                ]
+            },
+            {
+                id: 53,
+                section: "FÍSICA",
+                text: "Cuando la trayectoria es una línea recta y no hay cambios de sentido, el módulo del vector desplazamiento coincide con la distancia recorrida por el móvil sobre la trayectoria. En cualquier otro caso, la distancia recorrida es _______ que el módulo del vector desplazamiento",
+                options: [
+                    { id: "a", text: "Igual", correct: false },
+                    { id: "b", text: "Mayor", correct: true },
+                    { id: "c", text: "Menor", correct: false },
+                    { id: "d", text: "Cero", correct: false }
+                ]
+            },
+            {
+                id: 54,
+                section: "FÍSICA",
+                text: "El vector velocidad media se aproxima al vector velocidad en un instante de tiempo (t). Este vector recibe el nombre de ___________________",
+                options: [
+                    { id: "a", text: "Velocidad inicial", correct: false },
+                    { id: "b", text: "Velocidad media", correct: false },
+                    { id: "c", text: "Velocidad instantánea", correct: true },
+                    { id: "d", text: "Velocidad final", correct: false }
+                ]
+            },
+            {
+                id: 55,
+                section: "FÍSICA",
+                text: "¿Cuál es el efecto del movimiento de un objeto que se mueve en línea recta a velocidad constante y, al mismo tiempo, está sometido a una aceleración en dirección opuesta?",
+                options: [
+                    { id: "a", text: "El objeto continuará moviéndose a velocidad constante en la misma dirección", correct: false },
+                    { id: "b", text: "El objeto disminuirá su velocidad y finalmente se detendrá", correct: true },
+                    { id: "c", text: "El objeto acelerará en dirección opuesta", correct: false },
+                    { id: "d", text: "El objeto se moverá en una trayectoria curva", correct: false }
+                ]
+            },
+            {
+                id: 56,
+                section: "FÍSICA",
+                text: "Un coche viaja a una velocidad constante de 20 metros por segundo hacia el este. Al mismo tiempo, un segundo coche parte de la misma posición y viaja a una velocidad constante de 15 metros por segundo hacia el oeste. Suponiendo que no actúan fuerzas externas sobre los coches, ¿qué sucederá con la distancia entre los coches con el tiempo?",
+                options: [
+                    { id: "a", text: "La distancia entre los coches aumentará con el tiempo", correct: true },
+                    { id: "b", text: "La distancia entre los coches disminuirá con el tiempo", correct: false },
+                    { id: "c", text: "La distancia entre los coches permanecerá constante con el tiempo", correct: false },
+                    { id: "d", text: "No se puede determinar sin conocer la distancia inicial entre los coches", correct: false }
+                ]
+            },
+            {
+                id: 57,
+                section: "FÍSICA",
+                text: "Determinar el desplazamiento de una partícula que se mueve desde el punto A hasta el punto B.",
+                image: "SE1P57.png",
+                options: [
+                    { id: "a", text: "\\Delta\\vec{r} = (0\\vec{i} - 20\\vec{j}) m", correct: true },
+                    { id: "b", text: "\\Delta\\vec{r} = (0\\vec{i} + 20\\vec{j}) m", correct: false },
+                    { id: "c", text: "\\Delta\\vec{r} = (20\\vec{i} - 20\\vec{j}) m", correct: false },
+                    { id: "d", text: "\\Delta\\vec{r} = (20\\vec{i} + 20\\vec{j}) m", correct: false }
+                ]
+            },
+            {
+                id: 58,
+                section: "FÍSICA",
+                text: "Determinar según el siguiente gráfico que tipo de trayectoria describe un móvil que pasa por los puntos [A-H]",
+                image: "SE1P58.png",
+                options: [
+                    { id: "a", text: "Elíptica", correct: false },
+                    { id: "b", text: "Irregular", correct: false },
+                    { id: "c", text: "Parabólica", correct: true },
+                    { id: "d", text: "Circular", correct: false }
+                ]
+            },
+            {
+                id: 59,
+                section: "FÍSICA",
+                text: "Determinar la distancia recorrida de una partícula representada su trayectoria o movimiento de A hasta B en la siguiente gráfica.",
+                image: "SE1P59.png",
+                options: [
+                    { id: "a", text: "d = (9 + \\sqrt{34}) m", correct: true },
+                    { id: "b", text: "d = (9 - \\sqrt{34}) m", correct: false },
+                    { id: "c", text: "d = (-9 + \\sqrt{34}) m", correct: false },
+                    { id: "d", text: "d = (-9 - \\sqrt{34}) m", correct: false }
+                ]
+            },
+            {
+                id: 60,
+                section: "FÍSICA",
+                text: "Una avioneta se desplaza 500 km hacia al Norte para fumigar dos plantaciones de banano, el tiempo que tarda en llegar a la primera plantación y empezar con el trabajo de fumigación es de 2 horas, luego se desplaza 1300 km hacia el Este en 16200 segundos para poder llegar a la segunda plantación. Calcular el vector velocidad media en km/h del segundo desplazamiento",
+                options: [
+                    { id: "a", text: "\\vec{v_m} = 228,98\\vec{i} km/h", correct: false },
+                    { id: "b", text: "\\vec{v_m} = 248,98\\vec{i} km/h", correct: false },
+                    { id: "c", text: "\\vec{v_m} = 268,98\\vec{i} km/h", correct: false },
+                    { id: "d", text: "\\vec{v_m} = 288,98\\vec{i} km/h", correct: true }
+                ]
+            },
+            {
+                id: 61,
+                section: "FÍSICA",
+                text: "En un río, un bote se mueve a una velocidad constante of 6 km/h hacia el este. Al mismo tiempo, la corriente del río se mueve a una velocidad constante of 3 km/h hacia el este. ¿Cuál es la rapidez del bote en relación con un observador en la orilla del río?",
+                options: [
+                    { id: "a", text: "\\ 3 km/h", correct: false },
+                    { id: "b", text: "\\ 6 km/h", correct: false },
+                    { id: "c", text: "\\ 9 km/h", correct: true },
+                    { id: "d", text: "\\ 12 km/h", correct: false }
+                ]
+            },
+            {
+                id: 62,
+                section: "FÍSICA",
+                text: "Determinar el vector desplazamiento de una partícula al tiempo t=5s, representada por la ecuación:",
+                equation: "$$\\Delta\\vec{r} = (5t\\vec{i} + 3t^2\\vec{j}) m$$",
+                text2: "la cual tiene como punto inicial t=0.",
+                options: [
+                    { id: "a", text: "\\Delta\\vec{r} = (25\\vec{i} + 75\\vec{j}) m", correct: true },
+                    { id: "b", text: "\\Delta\\vec{r} = (25\\vec{i} - 75\\vec{j}) m", correct: false },
+                    { id: "c", text: "\\Delta\\vec{r} = (-25\\vec{i} - 75\\vec{j}) m", correct: false },
+                    { id: "d", text: "\\Delta\\vec{r} = (-25\\vec{i} + 75\\vec{j}) m", correct: false }
+                ]
+            },
+            {
+                id: 63,
+                section: "FÍSICA",
+                text: "Determinar el vector desplazamiento en coordenadas polares y la distancia recorrida entre los puntos A y B de la siguiente gráfica del movimiento de una partícula.",
+                image: "SE1P63.png",
+                options: [
+                    { id: "a", text: "\\Delta\\vec{r} = (50 m; 0°); d = 5(4 + 3\\pi) m", correct: false },
+                    { id: "b", text: "\\Delta\\vec{r} = (50 m; 90°); d = 5(4 + 3\\pi) m", correct: false },
+                    { id: "c", text: "\\Delta\\vec{r} = (50 m; 0°); d = -5(4 + 3\\pi) m", correct: true },
+                    { id: "d", text: "\\Delta\\vec{r} = (50 m; 180°); d = 5(4 + 3\\pi) m", correct: false }
+                ]
+            },
+            {
+                id: 64,
+                section: "FÍSICA",
+                text: "Determinar la distancia recorrida de una partícula representada su trayectoria o movimiento de A hasta B en la siguiente gráfica.",
+                image: "SE1P64.png",
+                options: [
+                    { id: "a", text: "d = (55 + 10\\pi) m", correct: true },
+                    { id: "b", text: "d = (55 - 10\\pi) m", correct: false },
+                    { id: "c", text: "d = (10 + 55\\pi) m", correct: false },
+                    { id: "d", text: "d = (10 - 55\\pi) m", correct: false }
+                ]
+            },
+            {
+                id: 65,
+                section: "FÍSICA",
+                text: "Un autoferro, se desplaza por 4 estaciones distintas hasta llegar a la estación de embarque y desembarque de pasajeros, recorriendo los primeros 1000 m en 0.30 horas; a la segunda estación llega en 0.50 horas y ha recorrido 1600 m, para llegar a la tercera estación tuvo que recorrer 2 millas en 2500 segundos, finalmente la estación de embarque y desembarque de pasajeros llega en 3500 segundos y recorrió 7 millas. Calcular la velocidad media y expresarlo en km/h",
+                options: [
+                    { id: "a", text: "\\ v_m = 6,95 km/h", correct: false },
+                    { id: "b", text: "\\ v_m = 26,95 km/h", correct: false },
+                    { id: "c", text: "\\ v_m = 46,95 km/h", correct: false },
+                    { id: "d", text: "\\ v_m = 66,95 km/h", correct: true }
+                ]
+            }
+        ];
+
+        // Variables globales
+        let currentQuestion = 0;
+        let studentAnswers = {};
+        let timeLeft = 90 * 60; // 90 minutos en segundos
+        let timerInterval;
+        let currentUser = "";
+        let userAttempts = {};
+        let examResults = [];
+
+        // Elementos del DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const examSection = document.getElementById('examSection');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const academicScreen = document.getElementById('academicScreen');
+        const usernameInput = document.getElementById('username');
+        const loginBtn = document.getElementById('loginBtn');
+        const attemptsInfo = document.getElementById('attemptsInfo');
+        const displayUserName = document.getElementById('displayUserName');
+        const attemptNumber = document.getElementById('attemptNumber');
+        const startBtn = document.getElementById('startBtn');
+        const displayName = document.getElementById('displayName');
+        const displayAttempt = document.getElementById('displayAttempt');
+        const timerDisplay = document.querySelector('.timer');
+        const section1Grid = document.getElementById('section1Grid');
+        const section2Grid = document.getElementById('section2Grid');
+        const section3Grid = document.getElementById('section3Grid');
+        const section4Grid = document.getElementById('section4Grid');
+        const section5Grid = document.getElementById('section5Grid');
+        const questionTitle = document.getElementById('questionTitle');
+        const sectionIndicator = document.getElementById('sectionIndicator');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const correctCount = document.getElementById('correctCount');
+        const incorrectCount = document.getElementById('incorrectCount');
+        const scoreMessage = document.getElementById('scoreMessage');
+        const resultName = document.getElementById('resultName');
+        const resultAttempt = document.getElementById('resultAttempt');
+        const restartBtn = document.getElementById('restartBtn');
+        const academicResults = document.getElementById('academicResults');
+        const backToLoginBtn = document.getElementById('backToLoginBtn');
+
+        // Inicializar el examen
+        loginBtn.addEventListener('click', loginUser);
+        startBtn.addEventListener('click', startExam);
+        prevBtn.addEventListener('click', showPrevQuestion);
+        nextBtn.addEventListener('click', showNextQuestion);
+        submitBtn.addEventListener('click', finishExam);
+        restartBtn.addEventListener('click', restartExam);
+        backToLoginBtn.addEventListener('click', () => {
+            academicScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+        });
+
+        // Cargar intentos desde localStorage
+        function loadUserAttempts() {
+            const storedAttempts = localStorage.getItem('espochUserAttempts');
+            if (storedAttempts) {
+                userAttempts = JSON.parse(storedAttempts);
+            } else {
+                userAttempts = {};
+            }
+        }
+
+        // Cargar resultados desde localStorage
+        function loadExamResults() {
+            const storedResults = localStorage.getItem('espochExamResults');
+            if (storedResults) {
+                examResults = JSON.parse(storedResults);
+            } else {
+                examResults = [];
+            }
+        }
+
+        // Guardar intentos en localStorage
+        function saveUserAttempts() {
+            localStorage.setItem('espochUserAttempts', JSON.stringify(userAttempts));
+        }
+
+        // Guardar resultados en localStorage
+        function saveExamResults() {
+            localStorage.setItem('espochExamResults', JSON.stringify(examResults));
+        }
+
+        function loginUser() {
+            const username = usernameInput.value.trim().toUpperCase();
+            
+            if (!allowedUsers.includes(username)) {
+                alert("Usuario no autorizado. Contacta al administrador si crees que esto es un error.");
+                return;
+            }
+            
+            // Usuario ACADEMICO tiene acceso especial
+            if (username === "ACADEMICO") {
+                loadExamResults();
+                showAcademicResults();
+                return;
+            }
+            
+            loadUserAttempts();
+            
+            if (!userAttempts[username]) {
+                userAttempts[username] = 0;
+            }
+            
+            // EDU tiene intentos ilimitados
+            if (username !== "EDU" && userAttempts[username] >= 2) {
+                alert(`Usuario ${username}, ya has completado tus 2 intentos permitidos.`);
+                return;
+            }
+            
+            currentUser = username;
+            // Solo incrementar intentos si no es EDU
+            if (username !== "EDU") {
+                userAttempts[username]++;
+            } else {
+                // Para EDU, si no tiene intentos, inicializar en 1
+                if (!userAttempts[username]) {
+                    userAttempts[username] = 1;
+                }
+            }
+            saveUserAttempts();
+            
+            displayUserName.textContent = username;
+            attemptNumber.textContent = userAttempts[username];
+            
+            loginScreen.style.display = 'none';
+            welcomeScreen.style.display = 'block';
+        }
+
+        function showAcademicResults() {
+            loginScreen.style.display = 'none';
+            academicScreen.style.display = 'block';
+            
+            let html = '<h3>Resultados de todos los estudiantes</h3>';
+            
+            if (examResults.length === 0) {
+                html += '<p>No hay resultados disponibles.</p>';
+            } else {
+                html += `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Intento</th>
+                            <th>Fecha</th>
+                            <th>Lengua y Literatura</th>
+                            <th>Matemática</th>
+                            <th>Química</th>
+                            <th>Biología</th>
+                            <th>Física</th>
+                            <th>Total</th>
+                            <th>Porcentaje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                
+                examResults.forEach(result => {
+                    const totalCorrect = result.sectionScores["LENGUA Y LITERATURA"].correct +
+                                       result.sectionScores["MATEMÁTICA"].correct +
+                                       result.sectionScores["QUÍMICA"].correct +
+                                       result.sectionScores["BIOLOGÍA"].correct +
+                                       result.sectionScores["FÍSICA"].correct;
+                    
+                    const percentage = ((totalCorrect / 65) * 100).toFixed(2);
+                    
+                    html += `
+                    <tr>
+                        <td>${result.student}</td>
+                        <td>${result.attempt}</td>
+                        <td>${result.date}</td>
+                        <td class="section-score">${result.sectionScores["LENGUA Y LITERATURA"].correct}/15</td>
+                        <td class="section-score">${result.sectionScores["MATEMÁTICA"].correct}/15</td>
+                        <td class="section-score">${result.sectionScores["QUÍMICA"].correct}/10</td>
+                        <td class="section-score">${result.sectionScores["BIOLOGÍA"].correct}/10</td>
+                        <td class="section-score">${result.sectionScores["FÍSICA"].correct}/15</td>
+                        <td class="section-score">${totalCorrect}/65</td>
+                        <td class="section-score">${percentage}%</td>
+                    </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+            }
+            
+            academicResults.innerHTML = html;
+        }
+
+        function startExam() {
+            displayName.textContent = currentUser;
+            displayAttempt.textContent = userAttempts[currentUser];
+            resultName.textContent = currentUser;
+            resultAttempt.textContent = userAttempts[currentUser];
+            
+            welcomeScreen.style.display = 'none';
+            examSection.style.display = 'flex';
+            
+            // Inicializar respuestas
+            examData.forEach(question => {
+                studentAnswers[question.id] = null;
+            });
+            
+            // Crear navegación de preguntas
+            createQuestionNavigation();
+            
+            // Iniciar temporizador
+            startTimer();
+            
+            // Mostrar primera pregunta
+            showQuestion(currentQuestion);
+        }
+
+        function createQuestionNavigation() {
+            // Limpiar grids
+            section1Grid.innerHTML = '';
+            section2Grid.innerHTML = '';
+            section3Grid.innerHTML = '';
+            section4Grid.innerHTML = '';
+            section5Grid.innerHTML = '';
+            
+            examData.forEach((question, index) => {
+                const questionNumber = document.createElement('div');
+                questionNumber.className = 'question-number';
+                questionNumber.textContent = question.id;
+                questionNumber.dataset.index = index;
+                
+                questionNumber.addEventListener('click', () => {
+                    currentQuestion = index;
+                    showQuestion(currentQuestion);
+                });
+                
+                // Agregar a la sección correspondiente
+                if (question.id <= 15) {
+                    section1Grid.appendChild(questionNumber);
+                } else if (question.id <= 30) {
+                    section2Grid.appendChild(questionNumber);
+                } else if (question.id <= 40) {
+                    section3Grid.appendChild(questionNumber);
+                } else if (question.id <= 50) {
+                    section4Grid.appendChild(questionNumber);
+                } else {
+                    section5Grid.appendChild(questionNumber);
+                }
+            });
+        }
+
+        function showQuestion(index) {
+            // Actualizar estado de navegación
+            updateQuestionNavigation();
+            
+            const question = examData[index];
+            questionTitle.textContent = `Pregunta #${question.id}`;
+            sectionIndicator.textContent = question.section;
+            
+            // Construir el contenido de la pregunta
+            let questionHTML = question.text;
+            
+            // Agregar ecuación si existe
+            if (question.equation) {
+                questionHTML += `<div class="math-equation">${question.equation}</div>`;
+            }
+            
+            // Agregar segunda parte del texto si existe
+            if (question.text2) {
+                questionHTML += `<p>${question.text2}</p>`;
+            }
+            
+            // Agregar imagen si existe
+            if (question.image) {
+                questionHTML += `<img src="${question.image}" alt="Imagen de la pregunta" class="question-image">`;
+            }
+            
+            questionText.innerHTML = questionHTML;
+            
+            // Limpiar opciones anteriores
+            optionsContainer.innerHTML = '';
+            
+            // Crear opciones
+            question.options.forEach(option => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                if (studentAnswers[question.id] === option.id) {
+                    optionElement.classList.add('selected');
+                }
+                
+                // Verificar si el texto de la opción contiene ecuaciones
+                const optionText = option.text;
+                const hasMath = optionText.includes('$') || optionText.includes('\\') || optionText.includes('{') || optionText.includes('}');
+                
+                optionElement.innerHTML = `
+                    <input type="radio" name="question-${question.id}" id="option-${option.id}" value="${option.id}" 
+                        ${studentAnswers[question.id] === option.id ? 'checked' : ''}>
+                    <div class="option-label">${option.id.toUpperCase()}.</div>
+                    <div class="option-text">${hasMath ? `\\(${optionText}\\)` : optionText}</div>
+                `;
+                
+                optionElement.addEventListener('click', () => {
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    optionElement.classList.add('selected');
+                    studentAnswers[question.id] = option.id;
+                    updateQuestionNavigation();
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Reprocesar MathJax para renderizar ecuaciones
+            if (window.MathJax) {
+                MathJax.typesetPromise([questionText, optionsContainer]).catch((err) => {
+                    console.log('Error al procesar MathJax:', err);
+                    // Reintentar después de un breve retraso
+                    setTimeout(() => {
+                        if (window.MathJax) {
+                            MathJax.typesetPromise([questionText, optionsContainer]);
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Actualizar botones de navegación
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === examData.length - 1;
+            
+            // Mostrar botón de envío en la última pregunta
+            submitBtn.style.display = index === examData.length - 1 ? 'block' : 'none';
+            nextBtn.style.display = index === examData.length - 1 ? 'none' : 'block';
+            
+            // Actualizar barra de progreso
+            updateProgressBar();
+        }
+
+        function updateQuestionNavigation() {
+            // Actualizar números de preguntas
+            document.querySelectorAll('.question-number').forEach((number, index) => {
+                number.classList.remove('active', 'answered');
+                if (index === currentQuestion) {
+                    number.classList.add('active');
+                }
+                const questionId = examData[index].id;
+                if (studentAnswers[questionId] !== null) {
+                    number.classList.add('answered');
+                }
+            });
+        }
+
+        function showPrevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function showNextQuestion() {
+            if (currentQuestion < examData.length - 1) {
+                currentQuestion++;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Cambiar color cuando quedan menos de 5 minutos
+            if (timeLeft < 300) {
+                timerDisplay.style.color = '#dc3545';
+            }
+        }
+
+        function updateProgressBar() {
+            const answeredCount = Object.values(studentAnswers).filter(answer => answer !== null).length;
+            const progress = (answeredCount / examData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function finishExam() {
+            clearInterval(timerInterval);
+            
+            // Calcular resultados
+            let correct = 0;
+            let incorrect = 0;
+            let sectionScores = {
+                "LENGUA Y LITERATURA": { correct: 0, total: 15 },
+                "MATEMÁTICA": { correct: 0, total: 15 },
+                "QUÍMICA": { correct: 0, total: 10 },
+                "BIOLOGÍA": { correct: 0, total: 10 },
+                "FÍSICA": { correct: 0, total: 15 }
+            };
+            
+            examData.forEach(question => {
+                const studentAnswer = studentAnswers[question.id];
+                if (studentAnswer !== null) {
+                    const selectedOption = question.options.find(opt => opt.id === studentAnswer);
+                    if (selectedOption && selectedOption.correct) {
+                        correct++;
+                        sectionScores[question.section].correct++;
+                    } else {
+                        incorrect++;
+                    }
+                } else {
+                    incorrect++;
+                }
+            });
+            
+            // Guardar resultados
+            loadExamResults();
+            examResults.push({
+                student: currentUser,
+                attempt: userAttempts[currentUser],
+                date: new Date().toLocaleString(),
+                score: correct,
+                sectionScores: sectionScores
+            });
+            saveExamResults();
+            
+            // Mostrar resultados
+            correctCount.textContent = correct;
+            incorrectCount.textContent = incorrect;
+            
+            // Mostrar mensaje según el puntaje
+            const percentage = (correct / examData.length) * 100;
+            let message = "";
+            
+            if (percentage >= 90) {
+                message = "¡Excelente trabajo! Demostraste un dominio excepcional de los temas evaluados.";
+            } else if (percentage >= 70) {
+                message = "¡Buen trabajo! Tienes un buen conocimiento de los temas, pero hay espacio para mejorar.";
+            } else if (percentage >= 50) {
+                message = "Resultado aceptable. Te recomendamos revisar los temas donde tuviste dificultades.";
+            } else {
+                message = "Necesitas reforzar tus conocimientos. Te sugerimos estudiar más los temas evaluados.";
+            }
+            
+            scoreMessage.innerHTML = `
+                <h3>Tu puntuación: ${correct}/${examData.length} (${Math.round(percentage)}%)</h3>
+                <p>${message}</p>
+            `;
+            
+            examSection.style.display = 'none';
+            resultsContainer.style.display = 'block';
+        }
+
+        function restartExam() {
+            // Reiniciar variables
+            currentQuestion = 0;
+            studentAnswers = {};
+            timeLeft = 90 * 60;
+            
+            // Restablecer la interfaz
+            resultsContainer.style.display = 'none';
+            loginScreen.style.display = 'block';
+            usernameInput.value = '';
+            timerDisplay.style.color = '#ffcc00';
+        }
+
+        // Inicializar datos al cargar la página
+        loadUserAttempts();
+        loadExamResults();
+    </script>
+</body>
+</html>
